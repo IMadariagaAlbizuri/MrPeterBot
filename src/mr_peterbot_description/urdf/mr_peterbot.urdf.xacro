@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mr_peterbot">
+    
+    <!-- === VARIABLES ===-->
+    <!-- CAR DIMENSIONS -->
+    <xacro:property name="chassis_length" value="0.4"/>
+    <xacro:property name="chassis_width"  value="0.2"/>
+    <xacro:property name="chassis_height" value="0.1"/>
+    <xacro:property name="chassis_mass"   value="2.0"/>
+    <xacro:property name="wheel_radius"   value="0.05"/>
+    <xacro:property name="wheel_width"    value="0.04"/>
+    <xacro:property name="wheel_mass"     value="0.5"/>
+    <xacro:property name="wheel_x_offset" value="0.13"/>
+    <xacro:property name="wheel_y_offset" value="0.12"/>
+
+    <!-- LiDAR DIMENSIONS -->
+    <xacro:property name="lidar_radius" value="0.04"/>
+    <xacro:property name="lidar_height" value="0.06"/>
+    <xacro:property name="lidar_mass"   value="0.1"/>
+
+    <!-- Camera DIMENSIONS -->
+    <xacro:property name="camera_width"  value="0.05"/>
+    <xacro:property name="camera_height" value="0.03"/>
+    <xacro:property name="camera_depth"  value="0.03"/>
+    <xacro:property name="camera_mass"   value="0.05"/>
+
+    <!-- ===== INERTIA MACROS (CHASIS AND WHEELS) ===== -->
+    <xacro:macro name="box_inertia" params="m l w h">
+        <inertial>
+            <mass value="${m}"/>
+            <inertia ixx="${(1/12) * m * (w*w + h*h)}" ixy="0.0" ixz="0.0"
+                    iyy="${(1/12) * m * (l*l + h*h)}" iyz="0.0"
+                    izz="${(1/12) * m * (l*l + w*w)}"/>
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="cylinder_inertia" params="m r l">
+        <inertial>
+            <mass value="${m}"/>
+            <inertia ixx="${(1/12) * m * (3*r*r + l*l)}" ixy="0.0" ixz="0.0"
+                    iyy="${(1/12) * m * (3*r*r + l*l)}" iyz="0.0"
+                    izz="${(1/2)  * m * r*r}"/>
+            </inertial>
+    </xacro:macro>
+
+    <!-- ===== BASE LINK ===== -->
+    <link name="base_link"/>
+
+    <!-- ===== CHASSIS OF MR. PETERBOT RC CAR ===== -->
+    <link name="chassis">
+        <visual>
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+        </geometry>
+        <material name="blue">
+            <color rgba="0.0 0.0 0.8 1.0"/>
+        </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="${chassis_mass}" 
+                       l="${chassis_length}" 
+                       w="${chassis_width}" 
+                       h="${chassis_height}"/>
+    </link>
+
+    <joint name="base_to_chassis" type="fixed">
+        <parent link="base_link"/>
+        <child  link="chassis"/>
+        <origin xyz="0 0 ${wheel_radius + chassis_height/2}"/>
+    </joint>
+
+    <!-- ===== WHEEL MACRO ===== -->
+    <xacro:macro name="wheel" params="name x y">
+        <link name="${name}_wheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+                <material name="black">
+                    <color rgba="0.1 0.1 0.1 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+            </collision>
+            <xacro:cylinder_inertia m="${wheel_mass}" 
+                               r="${wheel_radius}" 
+                               l="${wheel_width}"/>
+        </link>
+
+        <joint name="${name}_wheel_joint" type="continuous">
+            <parent link="chassis"/>
+            <child  link="${name}_wheel"/>
+            <origin xyz="${x} ${y} 0" rpy="${pi/2} 0 0"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+    </xacro:macro>
+
+    <!-- ===== ADDIND THE 4 WHEELS ===== -->
+    <xacro:wheel name="front_left"  x=" ${wheel_x_offset}" y=" ${wheel_y_offset}"/>
+    <xacro:wheel name="front_right" x=" ${wheel_x_offset}" y="-${wheel_y_offset}"/>
+    <xacro:wheel name="rear_left"   x="-${wheel_x_offset}" y=" ${wheel_y_offset}"/>
+    <xacro:wheel name="rear_right"  x="-${wheel_x_offset}" y="-${wheel_y_offset}"/>
+
+    <!-- ===== LiDAR ===== -->
+    <link name="lidar_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${lidar_radius}" 
+                        length="${lidar_height}"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${lidar_radius}" 
+                        length="${lidar_height}"/>
+            </geometry>
+        </collision>
+        <xacro:cylinder_inertia m="${lidar_mass}"
+                                r="${lidar_radius}"
+                                l="${lidar_height}"/>
+    </link>
+
+    <joint name="lidar_joint" type="fixed">
+        <parent link="chassis"/>
+        <child  link="lidar_link"/>
+        <origin xyz="0 0 ${chassis_height/2 + lidar_height/2}"/>
+    </joint>
+
+    <!-- ===== CAMERA ===== -->
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="${camera_depth} ${camera_width} ${camera_height}"/>
+            </geometry>
+            <material name="red">
+                <color rgba="0.8 0.0 0.0 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${camera_depth} ${camera_width} ${camera_height}"/>
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="${camera_mass}"
+                        l="${camera_depth}"
+                        w="${camera_width}"
+                        h="${camera_height}"/>
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+        <parent link="chassis"/>
+        <child  link="camera_link"/>
+        <origin xyz="${chassis_length/2} 0 0"/>
+    </joint>
+</robot>
