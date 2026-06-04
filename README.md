@@ -11,8 +11,8 @@ slam_toolbox · Python · YOLO v26
 
 ## Roadmap
 - [x] ROS2 workspace setup
-- [ ] Ackermann URDF from scratch
-- [ ] Gazebo Harmonic simulation
+- [x] Ackermann URDF from scratch
+- [x] Gazebo Harmonic simulation
 - [ ] 2D SLAM with slam_toolbox
 - [ ] Autonomous navigation with Nav2
 - [ ] Person detection with YOLO v26
