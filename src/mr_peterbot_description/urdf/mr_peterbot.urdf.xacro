@@ -201,16 +201,43 @@
         <mu2>0.8</mu2>
     </gazebo>
 
-    <!-- ===== GAZEBO PHYSICS PLUGIN ===== -->
+    <!-- ===== ROS2 CONTROL ===== -->
+    <ros2_control name="mr_peterbot" type="system">
+        <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
+
+        <!-- Back wheels — Actibves -->
+        <joint name="rear_left_wheel_joint">
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+        </joint>
+
+        <joint name="rear_right_wheel_joint">
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+        </joint>
+
+        <!-- Front Wheels — sPassives -->
+        <joint name="front_left_wheel_joint">
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+        </joint>
+
+        <joint name="front_right_wheel_joint">
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+        </joint>
+
+    </ros2_control>
+
+    <!-- ===== GZ ROS2 CONTROL PLUGIN ===== -->
     <gazebo>
-    <plugin filename="gz-sim-diff-drive-system"
-            name="gz::sim::systems::DiffDrive">
-        <left_joint>rear_left_wheel_joint</left_joint>
-        <right_joint>rear_right_wheel_joint</right_joint>
-        <wheel_separation>${wheel_y_offset * 2}</wheel_separation>
-        <wheel_radius>${wheel_radius}</wheel_radius>
-        <odom_publish_frequency>10</odom_publish_frequency>
-        <topic>cmd_vel</topic>
-    </plugin>
+        <plugin filename="gz_ros2_control-system"
+                name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find mr_peterbot_bringup)/config/controllers.yaml</parameters>
+        </plugin>
     </gazebo>
 </robot>
