@@ -23,14 +23,14 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard  --ros-args --remap cmd_vel
 
 ## Roadmap
 - [x] ROS2 workspace sketup
-- [x] Ackermann URDF from scratch
+- [x] Differential drive robot URDF from scratch
 - [x] Gazebo Harmonic simulation
-- [x] ros2_control — robot moves 🚨
+- [x] ros2_control — robot moves 
 - [ ] 2D SLAM with slam_toolbox
 - [ ] Autonomous navigation with Nav2
 - [ ] Person detection with YOLO v26
 - [ ] Pursuit behavior 😈
-- [ ] Siren sound on detection 🚨
+- [ ] Siren sound on detection 🔊
 
 ## Warning
 Do not deploy in close neighbourhoods.
