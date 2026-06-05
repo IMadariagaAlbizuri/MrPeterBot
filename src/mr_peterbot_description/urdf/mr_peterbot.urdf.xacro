@@ -70,7 +70,8 @@
     <joint name="base_to_chassis" type="fixed">
         <parent link="base_link"/>
         <child  link="chassis"/>
-        <origin xyz="0 0 ${wheel_radius + chassis_height/2}"/>
+        <origin xyz="0 0 ${wheel_radius + chassis_height/2}" 
+          rpy="0 0 3.1416"/>
     </joint>
 
     <!-- ===== WHEEL MACRO ===== -->
@@ -103,10 +104,10 @@
     </xacro:macro>
 
     <!-- ===== ADDIND THE 4 WHEELS ===== -->
-    <xacro:wheel name="front_left"  x=" ${wheel_x_offset}" y=" ${wheel_y_offset}"/>
-    <xacro:wheel name="front_right" x=" ${wheel_x_offset}" y="-${wheel_y_offset}"/>
-    <xacro:wheel name="rear_left"   x="-${wheel_x_offset}" y=" ${wheel_y_offset}"/>
-    <xacro:wheel name="rear_right"  x="-${wheel_x_offset}" y="-${wheel_y_offset}"/>
+    <xacro:wheel name="front_left"  x="-${wheel_x_offset}" y=" ${wheel_y_offset}"/>
+    <xacro:wheel name="front_right" x="-${wheel_x_offset}" y="-${wheel_y_offset}"/>
+    <xacro:wheel name="rear_left"   x=" ${wheel_x_offset}" y=" ${wheel_y_offset}"/>
+    <xacro:wheel name="rear_right"  x=" ${wheel_x_offset}" y="-${wheel_y_offset}"/>
 
     <!-- ===== LiDAR ===== -->
     <link name="lidar_link">

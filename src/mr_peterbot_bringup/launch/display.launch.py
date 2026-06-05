@@ -5,7 +5,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import ExecuteProcess, TimerAction
+from launch.actions import ExecuteProcess
 from launch.event_handlers import OnProcessExit
 import xacro
 
@@ -17,7 +17,7 @@ def generate_launch_description():
     pkg_bringup = get_package_share_directory('mr_peterbot_bringup')
 
     urdf_file = os.path.join(pkg_description, 'urdf', 'mr_peterbot.urdf.xacro')
-    world_file = os.path.join(pkg_description, 'worlds', 'empty.sdf')
+    world_file = os.path.join(pkg_description, 'worlds', 'neighbourhood.sdf')
 
     # Load the Xacro file
     robot_description = xacro.process_file(urdf_file).toxml()
@@ -50,7 +50,9 @@ def generate_launch_description():
             arguments=[
                 '-name', 'mr_peterbot',
                 '-topic', '/robot_description',
-                '-z', '0.05'
+                '-x', '18.2',
+                '-y', '15.4',
+                '-z', '0.1'
             ],
             output='screen'
         ),
