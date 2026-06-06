@@ -1,5 +1,4 @@
 # MrPeterBot 🤖
-
 > *Inspired by Mr. Peterson from Hello Neighbour* 🏠
 
 Autonomous car robot that detects troublesome 
@@ -16,16 +15,21 @@ slam_toolbox · Python · YOLO v26
 ros2 launch mr_peterbot_bringup display.launch.py
 ```
 
-### Teleoperation
+### Manual control (quick test)
 ```bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard  --ros-args --remap cmd_vel:=/diff_drive_controller/cmd_vel -p stamped:=true
+# Rear wheels
+ros2 topic pub /forward_velocity_controller/commands std_msgs/msg/Float64MultiArray "data: [5.0, 5.0]"
+
+# Front steering
+ros2 topic pub /forward_position_controller/commands std_msgs/msg/Float64MultiArray "data: [0.3, 0.3]"
 ```
 
 ## Roadmap
-- [x] ROS2 workspace sketup
-- [x] Differential drive robot URDF from scratch
+- [x] ROS2 workspace setup
+- [x] Ackermann steering robot URDF from scratch
 - [x] Gazebo Harmonic simulation
-- [x] ros2_control — robot moves 
+- [x] ros2_control — robot moves
+- [ ] Ackermann control node (C++ + Xbox joystick)
 - [ ] 2D SLAM with slam_toolbox
 - [ ] Autonomous navigation with Nav2
 - [ ] Person detection with YOLO v26

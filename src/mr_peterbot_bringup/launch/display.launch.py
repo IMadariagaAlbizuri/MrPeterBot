@@ -1,93 +1,114 @@
-# Launch file for Mr. PeterBot — Gazebo + RViz + ros2_control
-
-# Libraries and dependencies
 import os
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import ExecuteProcess
-from launch.event_handlers import OnProcessExit
 import xacro
 
-# Define the launch
+from ament_index_python.packages import get_package_share_directory
+
+from launch import LaunchDescription
+from launch.actions import (IncludeLaunchDescription, DeclareLaunchArgument,
+                            RegisterEventHandler, ExecuteProcess)
+from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.event_handlers import OnProcessExit
+from launch_ros.actions import Node
+
+
 def generate_launch_description():
 
-    # Get package paths
-    pkg_description = get_package_share_directory('mr_peterbot_description')
-    pkg_bringup = get_package_share_directory('mr_peterbot_bringup')
+    # ===== PATHS =====
+    description_pkg = get_package_share_directory('mr_peterbot_description')
+    bringup_pkg     = get_package_share_directory('mr_peterbot_bringup')
 
-    urdf_file = os.path.join(pkg_description, 'urdf', 'mr_peterbot.urdf.xacro')
-    world_file = os.path.join(pkg_description, 'worlds', 'neighbourhood.sdf')
+    robot_description_path = os.path.join(description_pkg, 'urdf',
+                                          'mr_peterbot.urdf.xacro')
+    gz_bridge_params_path  = os.path.join(bringup_pkg, 'config',
+                                          'ros_gz_bridge.yaml')
 
-    # Load the Xacro file
-    robot_description = xacro.process_file(urdf_file).toxml()
+    # ===== LOAD URDF =====
+    robot_description = xacro.process_file(robot_description_path).toxml()
 
-    # Get controllers configuration path
-    controllers_yaml = os.path.join(pkg_bringup, 'config', 'controllers.yaml')
+    # ===== LAUNCH ARGUMENTS =====
+    world_arg = DeclareLaunchArgument('world', default_value='empty.sdf',
+                                      description='Gazebo world file')
+    x_arg = DeclareLaunchArgument('x', default_value='0.0')
+    y_arg = DeclareLaunchArgument('y', default_value='0.0')
+    z_arg = DeclareLaunchArgument('z', default_value='0.1')
+    R_arg = DeclareLaunchArgument('R', default_value='0.0')
+    P_arg = DeclareLaunchArgument('P', default_value='0.0')
+    Y_arg = DeclareLaunchArgument('Y', default_value='0.0')
 
+    world_file = LaunchConfiguration('world')
+
+    # ===== GAZEBO =====
+    gazebo_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(get_package_share_directory('ros_gz_sim'),
+                         'launch', 'gz_sim.launch.py')),
+        launch_arguments={'gz_args': ['-r -v 4 ', world_file],
+                          'on_exit_shutdown': 'true'}.items())
+
+    # ===== NODES =====
+    spawn_node = Node(
+        package='ros_gz_sim',
+        executable='create',
+        arguments=['-name', 'mr_peterbot',
+                   '-string', robot_description,
+                   '-x', LaunchConfiguration('x'),
+                   '-y', LaunchConfiguration('y'),
+                   '-z', LaunchConfiguration('z'),
+                   '-R', LaunchConfiguration('R'),
+                   '-P', LaunchConfiguration('P'),
+                   '-Y', LaunchConfiguration('Y'),
+                   '-allow_renaming', 'false'],
+        output='screen')
+
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        parameters=[{'robot_description': robot_description,
+                     'use_sim_time': True}],
+        output='screen')
+
+    gz_bridge_node = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['--ros-args', '-p',
+                   f'config_file:={gz_bridge_params_path}'],
+        output='screen')
+
+    # ===== CONTROLLERS =====
+    joint_state_broadcaster = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state',
+             'active', 'joint_state_broadcaster'],
+        output='screen')
+
+    forward_velocity_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state',
+             'active', 'forward_velocity_controller'],
+        output='screen')
+
+    forward_position_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state',
+             'active', 'forward_position_controller'],
+        output='screen')
+
+    # ===== LAUNCH DESCRIPTION =====
     return LaunchDescription([
+        world_arg, x_arg, y_arg, z_arg, R_arg, P_arg, Y_arg,
 
-        # Launch Gazebo
-        ExecuteProcess(
-            cmd=['gz', 'sim', '-r', world_file],
-            output='screen'
-        ),
+        gazebo_launch,
+        spawn_node,
+        robot_state_publisher_node,
+        gz_bridge_node,
 
-        # Robot State Publisher NODE
-        Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            parameters=[{'robot_description': robot_description,
-            'use_sim_time': True}]
-        ),
+        # Load controllers sequentially after spawning
+        RegisterEventHandler(
+            OnProcessExit(
+                target_action=spawn_node,
+                on_exit=[joint_state_broadcaster])),
 
-        # Spawn MrPeterBot in Gazebo
-        Node(
-            package='ros_gz_sim',
-            executable='create',
-            name='spawn_mr_peterbot',
-            arguments=[
-                '-name', 'mr_peterbot',
-                '-topic', '/robot_description',
-                '-x', '18.2',
-                '-y', '15.4',
-                '-z', '0.1'
-            ],
-            output='screen'
-        ),
-
-        # Controller Manager
-        Node(
-            package='controller_manager',
-            executable='spawner',
-            arguments=['joint_state_broadcaster',
-                       '--param-file', controllers_yaml],
-            output='screen'
-        ),
-
-        # Diff Drive Controller
-        Node(
-            package='controller_manager',
-            executable='spawner',
-            arguments=['diff_drive_controller',
-                       '--param-file', controllers_yaml],
-            output='screen'
-        ),
-
-        # RViz2
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2'
-        ),
-
-        # Clock bridge — Gazebo → ROS2
-        Node(
-            package='ros_gz_bridge',
-            executable='parameter_bridge',
-            name='clock_bridge',
-            arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
-            output='screen'
-        ),
+        RegisterEventHandler(
+            OnProcessExit(
+                target_action=joint_state_broadcaster,
+                on_exit=[forward_velocity_controller,
+                         forward_position_controller])),
     ])
