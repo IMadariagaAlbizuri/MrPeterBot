@@ -3,7 +3,7 @@
 <package format="3">
   <name>mr_peterbot_bringup</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Package for RViz and Gazebo Simulation</description>
   <maintainer email="imadariaga_albizuri@outlook.com">imadariaga</maintainer>
   <license>Apache-2.0</license>
 

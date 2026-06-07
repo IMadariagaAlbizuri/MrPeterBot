@@ -18,7 +18,7 @@
     <!-- CINEMATIC AND DYNAMICS VALUES-->
     <xacro:property name="max_steering_angle"            value="0.6108652"/>
     <xacro:property name="max_steering_angular_velocity" value="1.570796"/>
-    <xacro:property name="max_steering_effort"           value="1.0"/>
+    <xacro:property name="max_steering_effort"           value="10.0"/>
     <xacro:property name="max_velocity"                  value="2.0"/>
     <xacro:property name="max_effort"                    value="10.0"/>
     <xacro:property name="max_wheel_angular_velocity"    value="${max_velocity / wheel_radius}"/>
@@ -89,10 +89,11 @@
                            h="${chassis_height}"/>
     </link>
 
+    <!-- No rotation — X is forward, Y is left, Z is up -->
     <joint name="base_to_chassis" type="fixed">
         <parent link="base_link"/>
         <child  link="chassis"/>
-        <origin xyz="0 0 ${wheel_radius + chassis_height/2}" rpy="0 0 3.1416"/>
+        <origin xyz="0 0 ${wheel_radius + chassis_height/2}" rpy="0 0 0"/>
     </joint>
 
     <!-- ===== WHEEL MACROS ===== -->
@@ -184,7 +185,7 @@
                    lower="${-max_steering_angle}"
                    upper="${max_steering_angle}"
                    velocity="${max_steering_angular_velocity}"/>
-            <dynamics damping="0.1" friction="0.1"/>
+            <dynamics damping="1.0" friction="0.1"/>
         </joint>
 
         <joint name="${prefix}_wheel_joint" type="continuous">
@@ -264,7 +265,7 @@
     <joint name="camera_joint" type="fixed">
         <parent link="chassis"/>
         <child  link="camera_link"/>
-        <origin xyz="${chassis_length/2 + camera_depth/2} 0 ${chassis_height/2}"/>
+        <origin xyz="${chassis_length/2 + camera_depth/2} 0 0"/>
     </joint>
 
     <!-- ===== GAZEBO SIMULATION SETUP ===== -->
@@ -275,23 +276,23 @@
     </gazebo>
 
     <gazebo reference="front_left_wheel_link">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>100.0</mu1>
+        <mu2>100.0</mu2>
     </gazebo>
 
     <gazebo reference="front_right_wheel_link">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>100.0</mu1>
+        <mu2>100.0</mu2>
     </gazebo>
 
     <gazebo reference="rear_left_wheel_link">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>100.0</mu1>
+        <mu2>100.0</mu2>
     </gazebo>
 
     <gazebo reference="rear_right_wheel_link">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>100.0</mu1>
+        <mu2>100.0</mu2>
     </gazebo>
 
     <gazebo reference="lidar_link">

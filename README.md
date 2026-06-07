@@ -6,7 +6,7 @@ neighbours and comes after you. 🚨
 
 ## Stack
 ROS2 Jazzy · Gazebo Harmonic · Nav2 · 
-slam_toolbox · Python · YOLO v26
+slam_toolbox · C++ · Python · YOLO v26
 
 ## Usage
 
@@ -17,24 +17,28 @@ ros2 launch mr_peterbot_bringup display.launch.py
 
 ### Manual control (quick test)
 ```bash
-# Rear wheels
-ros2 topic pub /forward_velocity_controller/commands std_msgs/msg/Float64MultiArray "data: [5.0, 5.0]"
-
-# Front steering
-ros2 topic pub /forward_position_controller/commands std_msgs/msg/Float64MultiArray "data: [0.3, 0.3]"
+# Moving Forwards
+ros2 topic pub /velocity std_msgs/msg/Float64 "data: 0.2" --rate 50
+# Steering
+ros2 topic pub /steering_angle std_msgs/msg/Float64 "data: 0.3" --rate 50
 ```
 
 ## Roadmap
 - [x] ROS2 workspace setup
 - [x] Ackermann steering robot URDF from scratch
 - [x] Gazebo Harmonic simulation
-- [x] ros2_control — robot moves
-- [ ] Ackermann control node (C++ + Xbox joystick)
+- [x] ros2_control — Ackermann steering + rear wheel drive
+- [x] Ackermann control node (C++)
+- [ ] PID Tuning using Lagrange Formulation 🎓
+- [ ] Xbox joystick controller
 - [ ] 2D SLAM with slam_toolbox
 - [ ] Autonomous navigation with Nav2
 - [ ] Person detection with YOLO v26
 - [ ] Pursuit behavior 😈
 - [ ] Siren sound on detection 🔊
+
+## Acknowledgements
+Ackermann steering architecture inspired by [Lucas Mazzetto's Ackermann Steering Vehicle Simulation](https://workabotic.com/2025/ackermann-steering-vehicle-simulation/) — great reference for ROS 2 + Gazebo Harmonic integration of 4 wheels mobile vehicles.
 
 ## Warning
 Do not deploy in close neighbourhoods.

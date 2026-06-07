@@ -22,6 +22,8 @@ def generate_launch_description():
                                           'mr_peterbot.urdf.xacro')
     gz_bridge_params_path  = os.path.join(bringup_pkg, 'config',
                                           'ros_gz_bridge.yaml')
+    control_params_path    = os.path.join(bringup_pkg, 'config',
+                                          'params.yaml')
 
     # ===== LOAD URDF =====
     robot_description = xacro.process_file(robot_description_path).toxml()
@@ -75,6 +77,12 @@ def generate_launch_description():
                    f'config_file:={gz_bridge_params_path}'],
         output='screen')
 
+    vehicle_controller_node = Node(
+        package='mr_peterbot_control',
+        executable='vehicle_controller',
+        parameters=[control_params_path],
+        output='screen')
+
     # ===== CONTROLLERS =====
     joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state',
@@ -100,15 +108,22 @@ def generate_launch_description():
         robot_state_publisher_node,
         gz_bridge_node,
 
-        # Load controllers sequentially after spawning
+        # Step 1 — load joint state broadcaster after robot spawns
         RegisterEventHandler(
             OnProcessExit(
                 target_action=spawn_node,
                 on_exit=[joint_state_broadcaster])),
 
+        # Step 2 — load controllers after joint state broadcaster
         RegisterEventHandler(
             OnProcessExit(
                 target_action=joint_state_broadcaster,
                 on_exit=[forward_velocity_controller,
                          forward_position_controller])),
+
+        # Step 3 — start control node after controllers are active
+        RegisterEventHandler(
+            OnProcessExit(
+                target_action=forward_position_controller,
+                on_exit=[vehicle_controller_node])),
     ])
