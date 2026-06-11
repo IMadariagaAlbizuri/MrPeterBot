@@ -5,4 +5,4 @@ vehicle_controller:
     wheel_radius: 0.05
     wheel_width: 0.04
     max_steering_angle: 0.6108652
-    max_velocity: 2.0
+    max_velocity: 0.2

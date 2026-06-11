@@ -83,6 +83,11 @@ def generate_launch_description():
         parameters=[control_params_path],
         output='screen')
 
+    lqr_controller_node = Node(
+        package='mr_peterbot_control',
+        executable='lqr_controller.py',
+        output='screen')
+    
     # ===== CONTROLLERS =====
     joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state',
@@ -121,9 +126,9 @@ def generate_launch_description():
                 on_exit=[forward_velocity_controller,
                          forward_position_controller])),
 
-        # Step 3 — start control node after controllers are active
+        # Step 3 — start both control nodes after controllers are active
         RegisterEventHandler(
             OnProcessExit(
                 target_action=forward_position_controller,
-                on_exit=[vehicle_controller_node])),
+                on_exit=[vehicle_controller_node, lqr_controller_node])),
     ])

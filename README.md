@@ -29,7 +29,7 @@ ros2 topic pub /steering_angle std_msgs/msg/Float64 "data: 0.3" --rate 50
 - [x] Gazebo Harmonic simulation
 - [x] ros2_control — Ackermann steering + rear wheel drive
 - [x] Ackermann control node (C++)
-- [ ] PID Tuning using Lagrange Formulation 🎓
+- [x] LQR Controller (v, θ) added
 - [ ] Xbox joystick controller
 - [ ] 2D SLAM with slam_toolbox
 - [ ] Autonomous navigation with Nav2
